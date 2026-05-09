@@ -460,6 +460,13 @@
     const data = {};
     formData.forEach((v, k) => { data[k] = v; });
 
+    // 只存 3 个字段，避免超出 Bmob 免费版字段限制
+    const bmobData = {
+      name_cn: data.name_cn || '',
+      apply_grade: data.apply_grade || '',
+      payload: JSON.stringify(data)
+    };
+
     try {
       const res = await fetch('https://api.bmobcloud.com/1/classes/Submission', {
         method: 'POST',
@@ -468,7 +475,7 @@
           'X-Bmob-REST-API-Key': REST_KEY,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(data)
+        body: JSON.stringify(bmobData)
       });
       if (res.ok) {
         document.getElementById('appForm').style.display = 'none';

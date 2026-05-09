@@ -339,7 +339,7 @@ function loadList() {
       name: obj.name_cn || '（未填姓名）',
       grade: obj.apply_grade || '',
       submitted_at: new Date(obj.createdAt).toLocaleString('zh-CN'),
-      data: obj
+      data: typeof obj.payload === 'string' ? JSON.parse(obj.payload) : obj
     }));
     document.getElementById('countBadge').textContent = submissions.length;
     renderList();
