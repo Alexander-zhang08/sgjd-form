@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>管理后台 · 松果青少年基地</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: #f5f5f0;
+    color: #2c2c2c;
+    line-height: 1.7;
+  }
+
+  /* ========== 登录页 ========== */
+  .login-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+  }
+  .login-box {
+    background: white;
+    border-radius: 12px;
+    padding: 48px 40px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    width: 360px;
+    text-align: center;
+  }
+  .login-box h1 { font-size: 20px; color: #2d5a27; margin-bottom: 6px; }
+  .login-box p { font-size: 13px; color: #888; margin-bottom: 28px; }
+  .login-box input {
+    width: 100%;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 11px 14px;
+    font-size: 15px;
+    margin-bottom: 14px;
+    font-family: inherit;
+  }
+  .login-box input:focus { outline: none; border-color: #2d5a27; }
+  .login-box button {
+    width: 100%;
+    background: #2d5a27;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 15px;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  .login-box button:hover { background: #3d7a35; }
+  .login-error { color: #c0392b; font-size: 13px; margin-top: 10px; display: none; }
+
+  /* ========== 主界面 ========== */
+  .main-page { display: none; }
+  .topbar {
+    background: #2d5a27;
+    color: white;
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 54px;
+  }
+  .topbar h1 { font-size: 17px; font-weight: 700; }
+  .topbar .actions { display: flex; gap: 12px; align-items: center; }
+  .topbar .btn-logout {
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.3);
+    color: white;
+    border-radius: 6px;
+    padding: 5px 14px;
+    cursor: pointer;
+    font-size: 13px;
+  }
+  .topbar .btn-logout:hover { background: rgba(255,255,255,0.25); }
+  .layout {
+    display: flex;
+    height: calc(100vh - 54px);
+  }
+
+  /* 左侧列表 */
+  .sidebar {
+    width: 300px;
+    background: white;
+    border-right: 1px solid #e8e8e8;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+  }
+  .sidebar-header {
+    padding: 16px 18px 12px;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 13px;
+    color: #888;
+  }
+  .sidebar-header span { font-weight: 600; color: #2c2c2c; }
+  .list-container { flex: 1; overflow-y: auto; }
+  .list-item {
+    padding: 14px 18px;
+    border-bottom: 1px solid #f5f5f5;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .list-item:hover { background: #f8fdf7; }
+  .list-item.active { background: #f0f7ee; border-left: 3px solid #2d5a27; }
+  .list-item .name { font-size: 15px; font-weight: 600; margin-bottom: 3px; }
+  .list-item .meta { font-size: 12px; color: #999; }
+  .list-item .grade-tag {
+    display: inline-block;
+    background: #e8f5e4;
+    color: #2d5a27;
+    padding: 1px 7px;
+    border-radius: 10px;
+    font-size: 11px;
+    margin-right: 6px;
+  }
+  .empty-list {
+    text-align: center;
+    padding: 60px 20px;
+    color: #aaa;
+    font-size: 14px;
+  }
+
+  /* 右侧详情 */
+  .detail-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px 28px;
+  }
+  .detail-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #bbb;
+    font-size: 15px;
+  }
+  .detail-content { display: none; }
+
+  /* 打印按钮 */
+  .detail-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  .detail-toolbar h2 { font-size: 18px; font-weight: 700; }
+  .toolbar-btns { display: flex; gap: 10px; }
+  .btn-print {
+    background: #2d5a27;
+    color: white;
+    border: none;
+    border-radius: 7px;
+    padding: 8px 18px;
+    font-size: 14px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .btn-print:hover { background: #3d7a35; }
+  .btn-delete {
+    background: white;
+    color: #c0392b;
+    border: 1px solid #e0a0a0;
+    border-radius: 7px;
+    padding: 8px 18px;
+    font-size: 14px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .btn-delete:hover { background: #fff0f0; }
+
+  /* 详情卡片 */
+  .detail-card {
+    background: white;
+    border-radius: 10px;
+    padding: 24px 28px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .card-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #2d5a27;
+    border-left: 3px solid #2d5a27;
+    padding-left: 10px;
+    margin-bottom: 18px;
+  }
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+  .info-item { }
+  .info-item .label { font-size: 12px; color: #999; margin-bottom: 3px; }
+  .info-item .value { font-size: 14px; color: #2c2c2c; font-weight: 500; }
+  .info-item.full { grid-column: 1 / -1; }
+  .qa-block { margin-bottom: 18px; }
+  .qa-block:last-child { margin-bottom: 0; }
+  .qa-block .q { font-size: 13px; color: #888; margin-bottom: 5px; }
+  .qa-block .a {
+    font-size: 14px;
+    color: #2c2c2c;
+    white-space: pre-wrap;
+    line-height: 1.8;
+    background: #fafafa;
+    padding: 10px 14px;
+    border-radius: 6px;
+    border-left: 3px solid #e8f5e4;
+    min-height: 40px;
+  }
+  .interest-list { display: flex; flex-direction: column; gap: 8px; }
+  .interest-entry {
+    display: flex;
+    gap: 12px;
+    font-size: 14px;
+  }
+  .interest-entry .i-name { font-weight: 600; min-width: 80px; color: #2d5a27; }
+  .interest-entry .i-detail { color: #555; }
+  .confirm-section { font-size: 14px; }
+  .sig-row {
+    display: flex;
+    gap: 40px;
+    margin-top: 12px;
+  }
+  .sig-item .sig-label { font-size: 12px; color: #999; }
+  .sig-item .sig-value { font-size: 14px; font-weight: 600; }
+  .meta-info {
+    text-align: right;
+    font-size: 12px;
+    color: #bbb;
+    margin-bottom: 16px;
+  }
+
+  /* ========== 打印样式 ========== */
+  @media print {
+    body { background: white; }
+    .topbar, .sidebar, .detail-toolbar, .login-page { display: none !important; }
+    .main-page { display: block !important; }
+    .layout { display: block; height: auto; }
+    .detail-area { padding: 0; overflow: visible; }
+    .detail-placeholder { display: none; }
+    .detail-content { display: block !important; }
+    .detail-card {
+      box-shadow: none;
+      border: 1px solid #ddd;
+      break-inside: avoid;
+      margin-bottom: 12px;
+    }
+    .print-header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .print-header h1 { font-size: 22px; }
+    .print-header p { font-size: 13px; color: #666; }
+  }
+</style>
+</head>
+<body>
+
+<!-- 登录页 -->
+<div class="login-page" id="loginPage">
+  <div class="login-box">
+    <h1>管理后台</h1>
+    <p>松果青少年基地 · 入学申请管理</p>
+    <input type="password" id="pwdInput" placeholder="请输入管理密码" onkeydown="if(event.key==='Enter') doLogin()">
+    <button onclick="doLogin()">登录</button>
+    <div class="login-error" id="loginError">密码错误，请重试</div>
+  </div>
+</div>
+
+<!-- 主界面 -->
+<div class="main-page" id="mainPage">
+  <div class="topbar">
+    <h1>入学申请管理 · 松果青少年基地</h1>
+    <div class="actions">
+      <span id="totalCount" style="font-size:13px;opacity:0.8;"></span>
+      <button class="btn-logout" onclick="doLogout()">退出</button>
+    </div>
+  </div>
+  <div class="layout">
+    <!-- 左侧列表 -->
+    <div class="sidebar">
+      <div class="sidebar-header">申请记录 <span id="countBadge">0</span> 份</div>
+      <div class="list-container" id="listContainer">
+        <div class="empty-list">暂无申请记录</div>
+      </div>
+    </div>
+    <!-- 右侧详情 -->
+    <div class="detail-area" id="detailArea">
+      <div class="detail-placeholder" id="detailPlaceholder">← 点击左侧记录查看详情</div>
+      <div class="detail-content" id="detailContent"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const APP_ID = '16cf16ac65c05e040626a05e7640bb35';
+const REST_KEY = '6779ce328377fbec259e6b5438c4b3e4';
+const ADMIN_PWD = 'SGJD';
+
+let submissions = [];
+let currentId = null;
+
+function doLogin() {
+  const p = document.getElementById('pwdInput').value.trim();
+  if (!p) return;
+  if (p !== ADMIN_PWD) {
+    document.getElementById('loginError').style.display = 'block';
+    return;
+  }
+  document.getElementById('loginPage').style.display = 'none';
+  document.getElementById('mainPage').style.display = 'block';
+  loadList();
+}
+
+function doLogout() {
+  submissions = [];
+  currentId = null;
+  document.getElementById('loginPage').style.display = 'flex';
+  document.getElementById('mainPage').style.display = 'none';
+  document.getElementById('pwdInput').value = '';
+}
+
+function loadList() {
+  fetch('https://api2.bmob.cn/1/classes/Submission?limit=1000&order=-createdAt', {
+    headers: {
+      'X-Bmob-Application-Id': APP_ID,
+      'X-Bmob-REST-API-Key': REST_KEY
+    }
+  })
+  .then(r => r.json())
+  .then(res => {
+    submissions = (res.results || []).map(obj => ({
+      id: obj.objectId,
+      name: obj.name_cn || '（未填姓名）',
+      grade: obj.apply_grade || '',
+      submitted_at: new Date(obj.createdAt).toLocaleString('zh-CN'),
+      data: obj
+    }));
+    document.getElementById('countBadge').textContent = submissions.length;
+    renderList();
+  })
+  .catch(() => alert('加载失败，请检查网络或 Bmob 配置'));
+}
+
+function renderList() {
+  const container = document.getElementById('listContainer');
+  if (submissions.length === 0) {
+    container.innerHTML = '<div class="empty-list">暂无申请记录</div>';
+    return;
+  }
+  container.innerHTML = submissions.map(s => `
+    <div class="list-item ${s.id === currentId ? 'active' : ''}" onclick="showDetail('${s.id}')">
+      <div class="name">${s.name}</div>
+      <div class="meta">
+        ${s.grade ? `<span class="grade-tag">${s.grade}</span>` : ''}
+        ${s.submitted_at}
+      </div>
+    </div>
+  `).join('');
+}
+
+function showDetail(id) {
+  currentId = id;
+  renderList();
+  const s = submissions.find(x => x.id === id);
+  if (!s) return;
+  const d = s.data;
+  const v = (key) => d[key] || '<span style="color:#ccc">未填写</span>';
+  const va = (key) => d[key] || '';
+
+  document.getElementById('detailPlaceholder').style.display = 'none';
+  const dc = document.getElementById('detailContent');
+  dc.style.display = 'block';
+  dc.innerHTML = `
+    <div class="print-header" style="display:none">
+      <h1>入学申请表</h1>
+      <p>松果青少年基地 &nbsp;·&nbsp; 提交时间：${s.submitted_at}</p>
+    </div>
+    <div class="detail-toolbar">
+      <h2>${d.name_cn || '（未填姓名）'}</h2>
+      <div class="toolbar-btns">
+        <button class="btn-print" onclick="doPrint()">🖨 打印 / 导出PDF</button>
+        <button class="btn-delete" onclick="doDelete('${id}')">删除</button>
+      </div>
+    </div>
+    <div class="meta-info">提交时间：${s.submitted_at} &nbsp;|&nbsp; ID: ${id}</div>
+
+    <!-- 基本信息 -->
+    <div class="detail-card">
+      <div class="card-title">一、基本信息</div>
+      <div class="info-grid">
+        <div class="info-item"><div class="label">姓名（中文）</div><div class="value">${v('name_cn')}</div></div>
+        <div class="info-item"><div class="label">姓名（英文）</div><div class="value">${v('name_en')}</div></div>
+        <div class="info-item"><div class="label">出生年月日</div><div class="value">${v('birth_date')}</div></div>
+        <div class="info-item"><div class="label">性别</div><div class="value">${v('gender')}</div></div>
+        <div class="info-item"><div class="label">国籍</div><div class="value">${v('nationality')}</div></div>
+        <div class="info-item"><div class="label">申请年级</div><div class="value">${v('apply_grade')}</div></div>
+        <div class="info-item"><div class="label">户籍所在地</div><div class="value">${v('huji')}</div></div>
+        <div class="info-item"><div class="label">电子邮箱</div><div class="value">${v('email')}</div></div>
+        <div class="info-item"><div class="label">家庭住址</div><div class="value">${v('address')}</div></div>
+        <div class="info-item"><div class="label">父亲姓名</div><div class="value">${v('father_name')}</div></div>
+        <div class="info-item"><div class="label">父亲电话</div><div class="value">${v('father_phone')}</div></div>
+        <div class="info-item"><div class="label">父亲微信</div><div class="value">${v('father_wechat')}</div></div>
+        <div class="info-item"><div class="label">母亲姓名</div><div class="value">${v('mother_name')}</div></div>
+        <div class="info-item"><div class="label">母亲电话</div><div class="value">${v('mother_phone')}</div></div>
+        <div class="info-item"><div class="label">母亲微信</div><div class="value">${v('mother_wechat')}</div></div>
+        <div class="info-item"><div class="label">是否用药</div><div class="value">${v('medication')}</div></div>
+        <div class="info-item"><div class="label">过敏史</div><div class="value">${v('allergy')}</div></div>
+        ${va('medical_notes') ? `<div class="info-item full"><div class="label">用药/过敏说明</div><div class="value">${v('medical_notes')}</div></div>` : ''}
+        <div class="info-item full"><div class="label">就读学校 / 求学经历</div><div class="value" style="white-space:pre-wrap">${v('school_history')}</div></div>
+      </div>
+    </div>
+
+    <!-- 自我介绍 -->
+    <div class="detail-card">
+      <div class="card-title">二、学生自我介绍</div>
+      <div class="qa-block"><div class="q">你会怎么形容自己？</div><div class="a">${va('self_desc') || '—'}</div></div>
+      <div class="qa-block"><div class="q">你最近在认真投入的一件事</div><div class="a">${va('recent_focus') || '—'}</div></div>
+      <div class="qa-block"><div class="q">介绍一下你的家庭</div><div class="a">${va('family_intro') || '—'}</div></div>
+      <div class="qa-block"><div class="q">教育经历（包括校外课程）</div><div class="a">${va('education_exp') || '—'}</div></div>
+      <div class="qa-block"><div class="q">你成长历程中一件重要的事情</div><div class="a">${va('important_event') || '—'}</div></div>
+    </div>
+
+    <!-- 期待与愿景 -->
+    <div class="detail-card">
+      <div class="card-title">三、期待、需要与愿景</div>
+      <div class="qa-block"><div class="q">你最期待在这里获得哪方面的学习/参与/成长？</div><div class="a">${va('expect_growth') || '—'}</div></div>
+      <div class="qa-block"><div class="q">你希望有什么样的导师和同学？</div><div class="a">${va('expect_people') || '—'}</div></div>
+      <div class="qa-block"><div class="q">你最想在此阶段解决或探索的一个问题是什么？</div><div class="a">${va('explore_question') || '—'}</div></div>
+    </div>
+
+    <!-- 学习经历 -->
+    <div class="detail-card">
+      <div class="card-title">四、学习经历与做事情的经验</div>
+      <div class="qa-block"><div class="q">经历</div><div class="a">${va('exp_what') || '—'}</div></div>
+      <div class="qa-block"><div class="q">这个经历对你最重要的部分是</div><div class="a">${va('exp_important') || '—'}</div></div>
+      <div class="qa-block"><div class="q">这个经历如何影响了你/让你改变</div><div class="a">${va('exp_impact') || '—'}</div></div>
+      <div class="qa-block"><div class="q">如果再来一次，你会有什么不一样的态度/决定</div><div class="a">${va('exp_redo') || '—'}</div></div>
+    </div>
+
+    <!-- 兴趣 -->
+    <div class="detail-card">
+      <div class="card-title">五、兴趣、特长与热情所在</div>
+      <div class="interest-list">
+        ${va('interest1') ? `<div class="interest-entry"><span class="i-name">1. ${va('interest1')}</span><span class="i-detail">${va('interest1_detail') || ''}</span></div>` : ''}
+        ${va('interest2') ? `<div class="interest-entry"><span class="i-name">2. ${va('interest2')}</span><span class="i-detail">${va('interest2_detail') || ''}</span></div>` : ''}
+        ${va('interest3') ? `<div class="interest-entry"><span class="i-name">3. ${va('interest3')}</span><span class="i-detail">${va('interest3_detail') || ''}</span></div>` : ''}
+        ${!va('interest1') && !va('interest2') && !va('interest3') ? '<span style="color:#ccc;font-size:14px">未填写</span>' : ''}
+      </div>
+    </div>
+
+    <!-- 家长 -->
+    <div class="detail-card">
+      <div class="card-title">六、家长 / 监护人填写</div>
+      <div class="qa-block"><div class="q">1. 松果基地最吸引你的特点是</div><div class="a">${va('parent_attract') || '—'}</div></div>
+      <div class="qa-block"><div class="q">2. 您最看重孩子在高中阶段获得什么成长？</div><div class="a">${va('parent_growth') || '—'}</div></div>
+      <div class="qa-block"><div class="q">3. 您自身有没有兴趣给高中阶段的青少年提供支持？</div><div class="a">${va('parent_support') || '—'}</div></div>
+      <div class="qa-block"><div class="q">4. 您最期待我们给学生提供什么支持？</div><div class="a">${va('parent_expect') || '—'}</div></div>
+    </div>
+
+    <!-- 确认 -->
+    <div class="detail-card">
+      <div class="card-title">七、申请确认</div>
+      <div class="confirm-section">
+        <p style="color:#555;margin-bottom:14px">我确认以上内容真实、完整，并愿意参与学校后续的面试、体验课或项目评估。</p>
+        <div class="sig-row">
+          <div class="sig-item">
+            <div class="sig-label">学生签名</div>
+            <div class="sig-value">${v('student_sign')}</div>
+          </div>
+          <div class="sig-item">
+            <div class="sig-label">家长签名</div>
+            <div class="sig-value">${v('parent_sign')}</div>
+          </div>
+          <div class="sig-item">
+            <div class="sig-label">日期</div>
+            <div class="sig-value">${v('sign_date')}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  dc.querySelector('.print-header').style.display = 'none';
+}
+
+function doPrint() {
+  const ph = document.querySelector('.print-header');
+  if (ph) ph.style.display = 'block';
+  window.print();
+  if (ph) ph.style.display = 'none';
+}
+
+function doDelete(id) {
+  if (!confirm('确定要删除这条记录吗？此操作不可撤销。')) return;
+  fetch('https://api2.bmob.cn/1/classes/Submission/' + id, {
+    method: 'DELETE',
+    headers: {
+      'X-Bmob-Application-Id': APP_ID,
+      'X-Bmob-REST-API-Key': REST_KEY
+    }
+  })
+  .then(r => {
+    if (r.ok) {
+      submissions = submissions.filter(s => s.id !== id);
+      currentId = null;
+      document.getElementById('countBadge').textContent = submissions.length;
+      document.getElementById('detailContent').style.display = 'none';
+      document.getElementById('detailPlaceholder').style.display = 'flex';
+      renderList();
+    } else {
+      alert('删除失败，请重试');
+    }
+  });
+}
+</script>
+</body>
+</html>
