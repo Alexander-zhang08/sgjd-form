@@ -326,7 +326,7 @@ function doLogout() {
 }
 
 function loadList() {
-  fetch('https://api2.bmob.cn/1/classes/Submission?limit=1000&order=-createdAt', {
+  fetch('https://api.bmobcloud.com/1/classes/Submission?limit=1000&order=-createdAt', {
     headers: {
       'X-Bmob-Application-Id': APP_ID,
       'X-Bmob-REST-API-Key': REST_KEY
@@ -498,7 +498,7 @@ function doPrint() {
 
 function doDelete(id) {
   if (!confirm('确定要删除这条记录吗？此操作不可撤销。')) return;
-  fetch('https://api2.bmob.cn/1/classes/Submission/' + id, {
+  fetch('https://api.bmobcloud.com/1/classes/Submission/' + id, {
     method: 'DELETE',
     headers: {
       'X-Bmob-Application-Id': APP_ID,

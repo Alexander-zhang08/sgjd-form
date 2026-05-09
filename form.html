@@ -461,7 +461,7 @@
     formData.forEach((v, k) => { data[k] = v; });
 
     try {
-      const res = await fetch('https://api2.bmob.cn/1/classes/Submission', {
+      const res = await fetch('https://api.bmobcloud.com/1/classes/Submission', {
         method: 'POST',
         headers: {
           'X-Bmob-Application-Id': APP_ID,
